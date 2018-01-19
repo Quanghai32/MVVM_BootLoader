@@ -1,0 +1,109 @@
+﻿<Window x:Class="MVVM_BootLoader.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="AGV wireless program"  
+		xmlns:System="clr-namespace:System;assembly=mscorlib"
+		xmlns:local="clr-namespace:MVVM_BootLoader" 
+		MinHeight="400"
+		MinWidth="790"		
+		SizeToContent="WidthAndHeight" 
+		
+		ResizeMode="NoResize"
+		Closed="Window_Closed">
+    <!--Icon="F:\HAI\00. VisualStudio\00. Project\BootLoader\MVVM_BootLoader\ADU.ico"-->
+    <Window.Resources>
+		<Style TargetType="Label">
+			<Setter Property="FontSize" Value="16"/>
+			<Setter Property="FontStyle" Value="Italic"/>
+		</Style>
+		<Style TargetType="TextBox">
+			<Setter Property="FontSize" Value="16"/>
+			<Setter Property="FontStyle" Value="Italic"/>
+		</Style>
+		<Style TargetType="ComboBox">
+			<Setter Property="FontSize" Value="16"/>
+			<Setter Property="Margin" Value="0 3 0 3"/>
+			<Setter Property="FontStyle" Value="Italic"/>
+		</Style>
+		<!--<Style TargetType="Button">
+			<Setter Property="FontFamily" Value="ParkAvenue BT"/>
+			<Setter Property="FontWeight" Value="Bold"/>
+			<Setter Property="FontSize" Value="25"/>
+		</Style>-->
+		
+	</Window.Resources>
+
+	<Window.DataContext>
+		<local:Main_ViewModel/>
+	</Window.DataContext>
+
+	<StackPanel>
+		<!--Resource template for XbeeDevice-->
+		<StackPanel.Resources>
+			<ResourceDictionary>
+				<ResourceDictionary.MergedDictionaries>
+					<ResourceDictionary Source="BootLoaderDataTemplate.xaml" />
+				</ResourceDictionary.MergedDictionaries>
+				<local:ListAGVtoComboBox x:Key="ListAGVComboBox"/>
+			</ResourceDictionary>
+		</StackPanel.Resources>
+
+		<!--Fix content-->		
+		<StackPanel >
+			<Menu>
+				<MenuItem Header="File">
+					<MenuItem Header="Clear history" Command="{Binding ClearHistoryCommand}"/>
+					<MenuItem Header="Clear log"/>
+				</MenuItem>
+				<MenuItem Header="History" ItemsSource="{Binding ListAGVName}">
+					<MenuItem.ItemContainerStyle>
+						<Style TargetType="{x:Type MenuItem}">
+							<Setter Property="Command" Value="{Binding DataContext.SelectRecentCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type MenuItem}, AncestorLevel=1}}" />   
+							<Setter Property="CommandParameter" Value="{Binding}" />
+						</Style>
+					</MenuItem.ItemContainerStyle>
+				</MenuItem>
+			</Menu>
+			
+			<Grid x:Name="stpAddAGV">
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition Width="100"></ColumnDefinition>
+					<ColumnDefinition></ColumnDefinition>
+					<ColumnDefinition Width="100"></ColumnDefinition>
+					<ColumnDefinition></ColumnDefinition>
+					<ColumnDefinition></ColumnDefinition>
+				</Grid.ColumnDefinitions>
+				<Label  Content="AGV name:" Grid.Column="0"/>
+				<TextBox x:Name="txbName" Grid.Column="1" Text="{Binding NewAGVName}" />
+				<Label Content="Address:" Grid.Column="2"/>
+				<TextBox x:Name="txbAdd" Grid.Column="3"  Text="{Binding NewAGVAddress}">
+				</TextBox>
+				<!--<TextBox x:Name="txbAdd" Grid.Column="3" Text="40C403B0"/>-->
+				<Button Content="Add" Grid.Column="4" Margin="20 0 0 0"
+					FontFamily="ParkAvenue BT"
+					FontWeight="Bold"
+					FontSize="25"
+					Command="{Binding AddCommand}"
+					CommandParameter="{Binding Children, ElementName=stpAddAGV}">
+					<Button.Background>
+						<LinearGradientBrush EndPoint="0,1" StartPoint="0,0">
+							<GradientStop Color="#FFF3F3F3" Offset="0"/>
+							<GradientStop Color="#FFEBEBEB" Offset="0.343"/>
+							<GradientStop Color="#FFDDDDDD" Offset="0.7"/>
+							<GradientStop Color="#FF64C338" Offset="0.957"/>
+						</LinearGradientBrush>
+					</Button.Background>
+				</Button>
+			</Grid>
+		</StackPanel>
+		
+
+		<!--List of Host Xbee-->
+
+		<ItemsControl x:Name="personItems"  
+			ItemsSource="{Binding ListAGV}" >
+		</ItemsControl>
+
+	</StackPanel>
+
+</Window>

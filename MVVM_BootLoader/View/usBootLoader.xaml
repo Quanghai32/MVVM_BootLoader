@@ -1,0 +1,202 @@
+﻿<UserControl x:Class="MVVM_BootLoader.usBootLoader"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+			 xmlns:ports="clr-namespace:System.IO.Ports;assembly=System"
+			 xmlns:local="clr-namespace:MVVM_BootLoader"
+             xmlns:System="clr-namespace:System;assembly=mscorlib">
+
+	<UserControl.Resources>
+		<ResourceDictionary>
+			<ObjectDataProvider x:Key="ChipEnum" MethodName="GetValues"
+                            ObjectType="{x:Type System:Enum}">
+				<ObjectDataProvider.MethodParameters>
+					<x:Type TypeName="local:EnumModule"/>
+				</ObjectDataProvider.MethodParameters>
+			</ObjectDataProvider>
+
+			<ObjectDataProvider  x:Key="portNames" MethodName="GetPortNames" 
+								 ObjectType="{x:Type ports:SerialPort}">
+			</ObjectDataProvider>
+
+			<LinearGradientBrush x:Key="backBrush" StartPoint="0,0.5" EndPoint="1,0.5">
+				<GradientStop Color="#1100CC22" Offset="0" />
+				<GradientStop Color="#8800CC22" Offset="0.97" />
+				<GradientStop Color="#AA10FF18" Offset="0.999" />
+				<GradientStop Color="#44FFFFFF" Offset="1" />
+			</LinearGradientBrush>
+
+			<local:PersonImageConverter x:Key="imageConverter" />
+			<local:StringToIntergerConverter x:Key="StringIntegerConverter"/>
+			<local:BoolToColorConverter x:Key="BoolColorConverter"/>
+			<local:BoolToStringConverter x:Key="BoolStringConverter"/>
+			<local:IntToStringConverter x:Key="IntStringConverter"/>
+			<local:AddressToColor x:Key="AddressColorConverter"/>
+		</ResourceDictionary>
+	</UserControl.Resources>
+
+	<Grid>
+		<Border Style="{StaticResource RectangleBoderStyle}">
+			<Expander Style="{StaticResource Expander_NoIcon}">
+				<Expander.Header>
+					<Grid>
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition MinWidth="80"></ColumnDefinition>
+							<ColumnDefinition MinWidth="90"></ColumnDefinition>
+							<ColumnDefinition MinWidth="80"></ColumnDefinition>
+							<ColumnDefinition MinWidth="60"></ColumnDefinition>
+							<ColumnDefinition MinWidth="70"></ColumnDefinition>
+							<ColumnDefinition MinWidth="130"></ColumnDefinition>
+							<ColumnDefinition MinWidth="50"></ColumnDefinition>
+							<ColumnDefinition MinWidth="100"></ColumnDefinition>
+							<ColumnDefinition MinWidth="100"></ColumnDefinition>
+						</Grid.ColumnDefinitions>
+						<Grid.RowDefinitions>
+							<RowDefinition></RowDefinition>
+							<RowDefinition></RowDefinition>
+							<RowDefinition></RowDefinition>
+						</Grid.RowDefinitions>
+
+
+						<TextBlock x:Name="personName" 
+								   Grid.Column="0"
+								   Grid.Row="1"
+								   HorizontalAlignment="Center"
+								   VerticalAlignment="Bottom"
+								   Text="{Binding Name}"  
+								   Foreground="Black" 
+								   Background="{Binding HostAddress,Converter={StaticResource AddressColorConverter}}"/>
+
+						<Label Content="Port:" Grid.Column="1" Grid.Row="0"/>
+						<Label Content="Baud rate:" Grid.Column="1" Grid.Row="1"/>
+						<Label Content="Module:" Grid.Column="4" Grid.Row="0"/>
+						<Label Content="Path:" Grid.Column="4" Grid.Row="1"/>
+						<Label Content="{Binding PathOfFile}" Grid.Column="5" 
+							   Grid.ColumnSpan="3" Grid.Row="1"/>
+
+						<ComboBox Name="cmbBaudRate"
+								  Grid.Column="2"
+								  Grid.Row="1"
+								  Text="{Binding SelectedBaud, Converter={StaticResource StringIntegerConverter}}">
+							<ComboBoxItem>9600</ComboBoxItem>
+							<ComboBoxItem>19200</ComboBoxItem>
+							<ComboBoxItem>38400</ComboBoxItem>
+							<ComboBoxItem>57600</ComboBoxItem>
+						</ComboBox>
+
+						<ComboBox Name="cmbPort"
+								  Grid.Column="2"
+								  Grid.Row="0"
+								  ItemsSource="{Binding Source={StaticResource portNames}}"
+								  Text="{Binding SelectedPort}"/>
+
+						<ComboBox Name="cmbModule"
+								  Grid.Column="5"
+								  Grid.Row="0"
+								  ItemsSource="{Binding Source={StaticResource ChipEnum}}"
+								  SelectedValue="{Binding SelectedChip}"/>
+
+						<Button Grid.Column="3" Margin="3 3 3 3" 
+								Command="{Binding ConnectCommand}"
+								Background="{Binding IsConnected, Converter={StaticResource BoolColorConverter}}"
+								Content="{Binding IsConnected, Converter={StaticResource BoolStringConverter}}"/>
+
+						<Button Content="Open" Grid.Column="3" Grid.Row="1" Margin="3 3 3 3"
+								Command="{Binding OpenFileCommand}"/>
+
+						<Button Content="Program" Grid.Column="7" Grid.RowSpan="2" Margin="5 5 5 5"
+								Command="{Binding ProgramCommand}"
+								IsEnabled="{Binding IsConnected}"/>
+
+						<Grid Grid.Column="8" Grid.Row="1">
+							<ProgressBar Margin="0 5 10 5" Grid.Column="8" Grid.Row="1" 
+										 Value="{Binding ProgressPercent}"/>
+							<StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
+								<TextBlock Text="{Binding HexIndex}"/>
+								<TextBlock VerticalAlignment="Center">/</TextBlock>
+								<TextBlock Text="{Binding TotalHexLine}"/>
+							</StackPanel>							
+						</Grid>
+						
+						<Label Grid.Column="8" Content="{Binding CycleTime, Converter={StaticResource IntStringConverter},ConverterParameter=Time}"
+							   Padding="0 0 0 0"
+							   Foreground="White"
+							   HorizontalAlignment="Left"/>
+						<Button Content=" X " Height="20" Width="30" Padding="0" 
+								Background="Transparent"
+								FontWeight="Bold"
+								Foreground="White"
+								Grid.Column="8"
+								VerticalAlignment="Top"
+								HorizontalAlignment="Right"
+								Margin="3 3"
+								Command="{Binding RelativeSource={RelativeSource FindAncestor,		AncestorType={x:Type ItemsControl}}, Path= DataContext.DeleteCommand}"
+										CommandParameter="{Binding}"/>
+					</Grid>
+				</Expander.Header>
+
+				<Grid Height="200">
+					<Grid.ColumnDefinitions>
+						<ColumnDefinition Width="400"></ColumnDefinition>
+						<ColumnDefinition Width="5"></ColumnDefinition>
+						<ColumnDefinition Width="115"></ColumnDefinition>
+						<ColumnDefinition Width="100"></ColumnDefinition>
+						<ColumnDefinition Width="*"></ColumnDefinition>
+						<ColumnDefinition Width="*"></ColumnDefinition>
+					</Grid.ColumnDefinitions>
+					<Grid.RowDefinitions>
+						<RowDefinition/>
+						<RowDefinition/>
+						<RowDefinition/>
+						<RowDefinition/>
+					</Grid.RowDefinitions>
+
+					<!--<ScrollViewer ScrollViewer.HorizontalScrollBarVisibility="Auto">
+						<TextBlock Text="{Binding Path=LogOutput}"/>
+					</ScrollViewer>-->
+
+					<!--<FlowDocumentScrollViewer Grid.Column="0" ScrollViewer.CanContentScroll="True" MaxHeight="200" IsToolBarVisible="True">
+						<FlowDocument>
+							<Paragraph FontSize="16">
+								
+							</Paragraph>
+						</FlowDocument>
+					</FlowDocumentScrollViewer>-->
+
+					<TextBox x:Name="txtLog"	Text="{Binding LogOutput}" 
+												VerticalScrollBarVisibility="Auto" 
+												TextChanged="txtLogger_TextChanged"
+												Grid.RowSpan="4"
+							 FontSize="{Binding ElementName=sliderFontSize, Path=Value}"/>
+
+					<GridSplitter Grid.Column="1" HorizontalAlignment="Stretch" Grid.RowSpan="4"/>
+
+					<Label Content="Host address:" Grid.Column="2" Grid.Row="0" VerticalAlignment="Center"/>
+					<Label Content="AGV address:" Grid.Column="2" Grid.Row="1" VerticalAlignment="Center"/>
+					<Label Content="Channel:" Grid.Column="2" Grid.Row="2" VerticalAlignment="Center"/>
+					<Label Content="ID:" Grid.Column="2" Grid.Row="3" VerticalAlignment="Center"/>
+
+					<Label Grid.Column="3" Grid.Row="0" VerticalAlignment="Center"
+						   Content="{Binding HostAddress, Converter={StaticResource IntStringConverter},ConverterParameter=Hex}"/>
+					<Label Grid.Column="3" Grid.Row="1" VerticalAlignment="Center"
+						   Content="{Binding TargetXbeeAdd,Converter={StaticResource IntStringConverter},ConverterParameter=Hex}"/>
+					<TextBox Grid.Column="3" Grid.Row="2" VerticalAlignment="Center" Margin="10 0 10 0"
+							 Text="{Binding Channel,Converter={StaticResource IntStringConverter},ConverterParameter=Hex}"/>
+					<TextBox Grid.Column="3" Grid.Row="3" VerticalAlignment="Center" Margin="10 0 10 0"
+							 Text="{Binding ID,Converter={StaticResource IntStringConverter},ConverterParameter=Hex}"/>
+					<Button Content="Cancel" Grid.Column="4" Grid.Row="0" Margin="10 0 10 0" VerticalAlignment="Center" Command="{Binding CancelCommand}" IsEnabled="{Binding IsConnected}"/>
+					<Button Content="Check build" Grid.Column="5" Grid.Row="0" VerticalAlignment="Center" Margin="10 0 10 0" Command="{Binding CheckBuildCommand}" IsEnabled="{Binding IsConnected}"/>
+					<Button Content="Reset" Grid.Column="5" Grid.Row="1" VerticalAlignment="Center" Command="{Binding ResetCommand}" Margin="10 0 10 0" IsEnabled="{Binding IsConnected}"/>
+					<Button Content="Read" Grid.Column="4" Grid.Row="2" VerticalAlignment="Center" Margin="10 0 10 0" Command="{Binding ReadChannelCommand}" IsEnabled="{Binding IsConnected}"/>
+					<Button Content="Write" Grid.Column="5" Grid.Row="2" VerticalAlignment="Center" Margin="10 0 10 0" IsEnabled="{Binding IsConnected}" Command="{Binding WriteChannelCommand}"/>
+					<Button Content="Read" Grid.Column="4" Grid.Row="3" VerticalAlignment="Center" Margin="10 0 10 0" Command="{Binding ReadIDCommand}" IsEnabled="{Binding IsConnected}"/>
+					<Button Content="Write" Grid.Column="5" Grid.Row="3" VerticalAlignment="Center" Margin="10 0 10 0" IsEnabled="{Binding IsConnected}" Command="{Binding WriteIDCommand}"/>
+					<Slider Name="sliderFontSize" Grid.Column="0" Grid.Row="3" HorizontalAlignment="Right" Width="100" VerticalAlignment="Bottom" Margin="20 5" Maximum="50" Minimum="10" SmallChange="1"/>
+					
+				</Grid>
+			</Expander>
+		</Border>
+	</Grid>
+</UserControl>
